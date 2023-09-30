@@ -1,0 +1,32 @@
+@function rainbow($l: 50%, $n: 12) {
+  $list: ();
+  @for $i from 0 through $n {
+    $h: calc(360 * $i / $n);
+    $list: append($list, hsl($h, 100%, $l), comma);
+  }
+  @return $list;
+}
+
+@keyframes shift {
+  0% {
+    background-position: 0;
+  }
+  100% {
+    background-position: -200%;
+  }
+}
+
+.content {
+  background-size: 200%;
+  animation: shift 2s linear infinite;
+}
+
+.light {
+  color: #000;
+  background-image: linear-gradient(to right, rainbow(66%));
+}
+
+.dark {
+  color: #fff;
+  background-image: linear-gradient(to right, rainbow(33%));
+}
