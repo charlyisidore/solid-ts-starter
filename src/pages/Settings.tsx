@@ -14,9 +14,9 @@ const colorSchemes = {
 };
 
 /**
- * Configuration page.
+ * Settings page.
  */
-const Config = () => (
+const Settings = () => (
   <div class={styles.page}>
     <p>
       💬 <LanguageSelect options={locales} />
@@ -33,4 +33,4 @@ const Config = () => (
   </div>
 );
 
-export default Config;
+export default Settings;
