@@ -159,6 +159,7 @@ export default [
     languageOptions: {
       ...languageOptions,
       globals: {
+        ...globals.browser,
         ...vitest.environments.env.globals,
       },
     },
