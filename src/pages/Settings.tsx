@@ -3,7 +3,7 @@ import Hello from '../components/Hello';
 import LanguageSelect from '../components/LanguageSelect';
 import ThemeSelect from '../components/ThemeSelect';
 
-import styles from './Main.module.scss';
+import styles from './Settings.module.scss';
 
 import locales from '../locales';
 import themes from '../themes';
@@ -14,9 +14,9 @@ const colorSchemes = {
 };
 
 /**
- * Main page.
+ * Configuration page.
  */
-const Main = () => (
+const Config = () => (
   <div class={styles.page}>
     <p>
       💬 <LanguageSelect options={locales} />
@@ -33,4 +33,4 @@ const Main = () => (
   </div>
 );
 
-export default Main;
+export default Config;

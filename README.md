@@ -11,6 +11,7 @@ Features included:
 This template is configured with:
 
 - [SolidJS](https://www.solidjs.com/)
+- [Solid Router](https://github.com/solidjs/solid-router)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Sass](https://sass-lang.com/)
 - [pnpm](https://pnpm.io/)
@@ -40,7 +41,8 @@ src/
 ├─ App.tsx              Root app component
 ├─ config.tsx           Configuration provider
 ├─ index.scss           Root styles
-└─ index.tsx            Root script
+├─ index.tsx            Root script
+└─ routes.ts            Routing configuration
 eslint.config.js        Linter configuration
 index.html              Entry point
 package.json            Node.js package configuration
