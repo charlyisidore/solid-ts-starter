@@ -10,7 +10,7 @@ import { LocaleProvider, createDictionary } from './providers/locale';
 import { ThemeProvider } from './providers/theme';
 
 // Fallbacks when locale and theme are not found
-import fallbackDictionary from './locales/eo';
+import fallbackLocale from './locales/eo';
 import fallbackTheme from './themes/default';
 
 /**
@@ -20,11 +20,11 @@ import fallbackTheme from './themes/default';
  *
  * @returns Dictionary.
  */
-const fetchDictionary = async (language: string) => {
+const fetchLocale = async (language: string) => {
   try {
     return createDictionary((await import(`./locales/${language}.ts`)).default);
   } catch {
-    return createDictionary(fallbackDictionary);
+    return createDictionary(fallbackLocale);
   }
 };
 
@@ -80,7 +80,7 @@ export const AppStateProvider: ParentComponent = (props) => {
     theme: 'default',
   });
 
-  const [dictionary] = createResource(() => config.language, fetchDictionary);
+  const [dictionary] = createResource(() => config.language, fetchLocale);
   const [theme] = createResource(() => config.theme, fetchTheme);
 
   const state = {
