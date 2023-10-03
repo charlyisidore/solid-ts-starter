@@ -87,7 +87,7 @@ export const AppStateProvider: ParentComponent = (props) => {
     get colorScheme() {
       return config.colorScheme;
     },
-    set colorScheme(colorScheme: string) {
+    set colorScheme(colorScheme: string | undefined) {
       setConfig({ colorScheme });
     },
     get language() {
