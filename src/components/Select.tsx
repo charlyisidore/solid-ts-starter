@@ -5,13 +5,13 @@ type Value = string | number | string[] | undefined;
 /**
  * Wrapper for `<select>` element.
  *
- * @prop {Record<string, Value>} options Object mapping values to names.
+ * @prop {Record<string, string>} options Object mapping values to names.
  * @prop {Value} value Selected value.
  * @prop {((value: string) => void) | undefined} onChange Function called on
  *       option change.
  */
 const Select: Component<{
-  options: Record<string, Value>;
+  options: Record<string, string>;
   value?: Value;
   onChange?: (value: string) => void;
 }> = (props) => {
