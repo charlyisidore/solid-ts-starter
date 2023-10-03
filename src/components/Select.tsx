@@ -4,7 +4,7 @@ import { type Component, For } from 'solid-js';
  * Wrapper for `<select>` element.
  *
  * @prop {Record<string, string>} options Object mapping values to names.
- * @prop {string} value Selected value.
+ * @prop {string | undefined} value Selected value.
  * @prop {((value: string) => void) | undefined} onChange Function called on
  *       option change.
  */
