@@ -40,7 +40,7 @@ const Settings = () => {
         🌗{' '}
         <Select
           options={colorSchemes}
-          value={app.colorScheme}
+          value={app.colorScheme ?? ''}
           onChange={(colorScheme) =>
             (app.colorScheme = colorScheme || undefined)
           }
