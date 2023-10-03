@@ -1,11 +1,7 @@
 import {
   type ParentComponent,
-  type Resource,
-  type Signal,
   createContext,
   createMemo,
-  createResource,
-  createSignal,
   useContext,
 } from 'solid-js';
 
@@ -33,17 +29,9 @@ export type Classes =
   | undefined;
 
 /**
- * Function to load a theme instance given its identifier.
- */
-export type ThemeFetcher = (theme: string) => Theme | Promise<Theme>;
-
-/**
  * Theme context.
  */
-const ThemeContext = createContext<{
-  theme: Signal<string | undefined>;
-  instance: Resource<Theme | undefined>;
-}>();
+const ThemeContext = createContext<() => Theme | undefined>();
 
 /**
  * Merge multiple styles into one by concatenating their class names.
@@ -81,13 +69,13 @@ function mergeStyles(styles: Styles[]): Styles {
  *
  * @example
  *   normalizeClasses('hello world');
- *   // ['hello', 'world']
+ *   // => ['hello', 'world']
  *   normalizeClasses(['hello', undefined, 'world']);
- *   // ['hello', 'world']
+ *   // => ['hello', 'world']
  *   normalizeClasses({ hello: true, world: false });
- *   // ['hello']
+ *   // => ['hello']
  *   normalizeClasses(undefined);
- *   // []
+ *   // => []
  */
 function normalizeClasses(classes: Classes): string[] {
   if (!classes) {
@@ -122,30 +110,12 @@ function normalizeClasses(classes: Classes): string[] {
  *
  * @returns The theme context.
  */
-function useThemeContext() {
+export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
     throw new Error('ThemeContext not found');
   }
   return context;
-}
-
-/**
- * Hook for managing the theme identifier.
- *
- * @returns An accessor and a setter for the theme identifier.
- */
-export function useTheme() {
-  return useThemeContext().theme;
-}
-
-/**
- * Hook for getting the theme instance.
- *
- * @returns An accessor for the theme instance.
- */
-export function useThemeInstance() {
-  return useThemeContext().instance;
 }
 
 /**
@@ -171,7 +141,7 @@ export function useThemeInstance() {
  *   };
  */
 export function useStyles(namespace: string, defaultStyles?: Styles) {
-  const theme = useThemeInstance();
+  const theme = useTheme();
   const styles = createMemo(() =>
     mergeStyles(
       [defaultStyles, theme()?.[namespace]].filter((v) => v) as Styles[],
@@ -181,7 +151,6 @@ export function useStyles(namespace: string, defaultStyles?: Styles) {
   return (classes: Classes) =>
     normalizeClasses(classes)
       .reduce(
-        // False positive
         // eslint-disable-next-line solid/reactivity
         (merged, className) => [...merged, styles()[className]],
         [] as string[],
@@ -192,80 +161,31 @@ export function useStyles(namespace: string, defaultStyles?: Styles) {
 /**
  * Provide simple theming support for descendant components.
  *
- * @prop {string | undefined} initialTheme Pre-fetched theme identifier.
- * @prop {Theme | undefined} initialInstance Pre-fetched theme instance.
- * @prop {ThemeFetcher} fetchTheme Theme fetcher function.
+ * @prop {Theme | undefined} theme Theme instance.
  *
  * @example
- *   import {
- *     type Theme,
- *     ThemeProvider,
- *     useStyles,
- *     useTheme,
- *   } from './providers/theme';
+ *   import { ThemeProvider, useStyles } from './providers/theme';
  *
- *   import defaultTheme from './themes/default';
- *   import unicornTheme from './themes/unicorn';
+ *   import Hello from './Hello.scss';
  *
- *   const themes: Record<string, Theme> = {
- *     default: defaultTheme,
- *     unicorn: unicornTheme,
- *   };
+ *   const theme = { Hello };
  *
  *   const Hello = () => {
  *     const styles = useStyles('Hello');
  *     return <div class={styles('content')}>Hello</div>;
  *   };
  *
- *   const ThemeSelect = () => {
- *     const [theme, setTheme] = useTheme();
- *     const handleChange = (event: Event) =>
- *       setTheme((event.target as HTMLSelectElement).value);
- *     return (
- *       <select onChange={handleChange}>
- *         <For each={Object.keys(themes)}>
- *           {(identifier) => (
- *             <option value={identifier} selected={identifier === theme()}>
- *               {identifier}
- *             </option>
- *           )}
- *         </For>
- *       </select>
- *     );
- *   };
- *
  *   const App = () => (
- *     <ThemeProvider
- *       initialTheme="default"
- *       initialInstance={themes.default}
- *       fetchTheme={(theme) => themes[theme]}
- *     >
+ *     <ThemeProvider theme={theme}>
  *       <Hello />
- *       <ThemeSelect />
  *     </ThemeProvider>
  *   );
  */
 export const ThemeProvider: ParentComponent<{
-  initialTheme?: string;
-  initialInstance?: Theme;
-  fetchTheme: ThemeFetcher;
-}> = (props) => {
-  const [theme, setTheme] = createSignal(props.initialTheme);
-
-  // The theme fetcher is not supposed to be reactive
+  theme?: Theme;
+}> = (props) => (
   // eslint-disable-next-line solid/reactivity
-  const [instance] = createResource(theme, props.fetchTheme, {
-    initialValue: props.initialInstance,
-  });
-
-  return (
-    <ThemeContext.Provider
-      value={{
-        theme: [theme, setTheme],
-        instance,
-      }}
-    >
-      {props.children}
-    </ThemeContext.Provider>
-  );
-};
+  <ThemeContext.Provider value={() => props.theme}>
+    {props.children}
+  </ThemeContext.Provider>
+);

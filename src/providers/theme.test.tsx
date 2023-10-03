@@ -1,6 +1,6 @@
-import { For } from 'solid-js';
 import { fireEvent, render } from '@solidjs/testing-library';
-import { type Theme, ThemeProvider, useStyles, useTheme } from './theme';
+import { For, createSignal } from 'solid-js';
+import { type Theme, ThemeProvider, useStyles } from './theme';
 
 describe('theme provider', () => {
   it('throws ThemeContext not found', async () => {
@@ -13,109 +13,89 @@ describe('theme provider', () => {
   });
 
   it('applies styles from string', async () => {
-    const themes: Record<string, Theme> = {
-      light: {
-        Hello: {
-          content: 'light_content',
-          text: 'light_text',
-        },
+    const theme = {
+      Hello: {
+        a: 'theme_a',
+        b: 'theme_b',
       },
     };
 
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles('content text')}>
+        <div data-testid="hello" class={styles('a b')}>
           Hello
         </div>
       );
     };
 
     const { getByTestId } = render(() => (
-      <ThemeProvider
-        initialTheme="light"
-        initialInstance={themes.light}
-        fetchTheme={(theme) => themes[theme]}
-      >
+      <ThemeProvider theme={theme}>
         <Hello />
       </ThemeProvider>
     ));
 
     const hello = getByTestId('hello');
-    expect(hello).toHaveClass('light_content light_text', { exact: true });
+    expect(hello).toHaveClass('theme_a theme_b', { exact: true });
   });
 
   it('applies styles from array', async () => {
-    const themes: Record<string, Theme> = {
-      light: {
-        Hello: {
-          content: 'light_content',
-          text: 'light_text',
-        },
+    const theme = {
+      Hello: {
+        a: 'theme_a',
+        b: 'theme_b',
       },
     };
 
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles(['content', undefined, 'text'])}>
+        <div data-testid="hello" class={styles(['a', undefined, 'b'])}>
           Hello
         </div>
       );
     };
 
     const { getByTestId } = render(() => (
-      <ThemeProvider
-        initialTheme="light"
-        initialInstance={themes.light}
-        fetchTheme={(theme) => themes[theme]}
-      >
+      <ThemeProvider theme={theme}>
         <Hello />
       </ThemeProvider>
     ));
 
     const hello = getByTestId('hello');
-    expect(hello).toHaveClass('light_content light_text', { exact: true });
+    expect(hello).toHaveClass('theme_a theme_b', { exact: true });
   });
 
   it('applies styles from object', async () => {
-    const themes: Record<string, Theme> = {
-      light: {
-        Hello: {
-          content: 'light_content',
-          text: 'light_text',
-        },
+    const theme = {
+      Hello: {
+        a: 'theme_a',
+        b: 'theme_b',
       },
     };
 
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles({ content: true, text: false })}>
+        <div data-testid="hello" class={styles({ a: true, b: false })}>
           Hello
         </div>
       );
     };
 
     const { getByTestId } = render(() => (
-      <ThemeProvider
-        initialTheme="light"
-        initialInstance={themes.light}
-        fetchTheme={(theme) => themes[theme]}
-      >
+      <ThemeProvider theme={theme}>
         <Hello />
       </ThemeProvider>
     ));
 
     const hello = getByTestId('hello');
-    expect(hello).toHaveClass('light_content', { exact: true });
+    expect(hello).toHaveClass('theme_a', { exact: true });
   });
 
   it('applies styles from undefined', async () => {
-    const themes: Record<string, Theme> = {
-      light: {
-        Hello: {},
-      },
+    const theme = {
+      Hello: {},
     };
 
     const Hello = () => {
@@ -128,11 +108,7 @@ describe('theme provider', () => {
     };
 
     const { getByTestId } = render(() => (
-      <ThemeProvider
-        initialTheme="light"
-        initialInstance={themes.light}
-        fetchTheme={(theme) => themes[theme]}
-      >
+      <ThemeProvider theme={theme}>
         <Hello />
       </ThemeProvider>
     ));
@@ -141,52 +117,70 @@ describe('theme provider', () => {
     expect(hello).not.toHaveClass();
   });
 
-  it('applies default styles', async () => {
-    const themes: Record<string, Theme> = {
-      light: {
-        Hello: {
-          content: 'light_content',
-        },
+  it('applies default styles with theme', async () => {
+    const theme = {
+      Hello: {
+        a: 'theme_a',
       },
     };
 
     const defaultStyles = {
-      content: 'default_content',
+      a: 'default_a',
     };
 
     const Hello = () => {
       const styles = useStyles('Hello', defaultStyles);
       return (
-        <div data-testid="hello" class={styles('content')}>
+        <div data-testid="hello" class={styles('a')}>
           Hello
         </div>
       );
     };
 
     const { getByTestId } = render(() => (
-      <ThemeProvider
-        initialTheme="light"
-        initialInstance={themes.light}
-        fetchTheme={(theme) => themes[theme]}
-      >
+      <ThemeProvider theme={theme}>
         <Hello />
       </ThemeProvider>
     ));
 
     const hello = getByTestId('hello');
-    expect(hello).toHaveClass('default_content light_content', { exact: true });
+    expect(hello).toHaveClass('default_a theme_a', { exact: true });
   });
 
-  it('fetches a theme', async () => {
+  it('applies default styles without theme', async () => {
+    const defaultStyles = {
+      a: 'default_a',
+    };
+
+    const Hello = () => {
+      const styles = useStyles('Hello', defaultStyles);
+      return (
+        <div data-testid="hello" class={styles('a')}>
+          Hello
+        </div>
+      );
+    };
+
+    const { getByTestId } = render(() => (
+      <ThemeProvider>
+        <Hello />
+      </ThemeProvider>
+    ));
+
+    const hello = getByTestId('hello');
+    expect(hello).toHaveClass('default_a', { exact: true });
+  });
+
+  it('changes the theme', async () => {
     const themes: Record<string, Theme> = {
       light: {
         Hello: {
-          content: 'light_content',
+          a: 'light_a',
         },
       },
       dark: {
         Hello: {
-          content: 'dark_content',
+          a: 'dark_a',
         },
       },
     };
@@ -194,44 +188,36 @@ describe('theme provider', () => {
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles('content')}>
+        <div data-testid="hello" class={styles('a')}>
           Hello
         </div>
       );
     };
 
-    const ThemeSelect = () => {
-      const [theme, setTheme] = useTheme();
+    const { getByTestId } = render(() => {
+      const [theme, setTheme] = createSignal('light');
       const handleChange = (event: Event) =>
         setTheme((event.target as HTMLSelectElement).value);
       return (
-        <select data-testid="select" onChange={handleChange}>
-          <For each={Object.keys(themes)}>
-            {(identifier) => (
-              <option value={identifier} selected={identifier === theme()}>
-                {identifier}
-              </option>
-            )}
-          </For>
-        </select>
+        <ThemeProvider theme={themes[theme()]}>
+          <Hello />
+          <select data-testid="select" onChange={handleChange}>
+            <For each={Object.keys(themes)}>
+              {(value) => (
+                <option value={value} selected={value === theme()}>
+                  {value}
+                </option>
+              )}
+            </For>
+          </select>
+        </ThemeProvider>
       );
-    };
-
-    const { getByTestId } = render(() => (
-      <ThemeProvider
-        initialTheme="light"
-        initialInstance={themes.light}
-        fetchTheme={(theme) => themes[theme]}
-      >
-        <Hello />
-        <ThemeSelect />
-      </ThemeProvider>
-    ));
+    });
 
     const hello = getByTestId('hello');
     const select = getByTestId('select');
-    expect(hello).toHaveClass('light_content', { exact: true });
+    expect(hello).toHaveClass('light_a', { exact: true });
     fireEvent.change(select, { target: { value: 'dark' } });
-    expect(hello).toHaveClass('dark_content', { exact: true });
+    expect(hello).toHaveClass('dark_a', { exact: true });
   });
 });

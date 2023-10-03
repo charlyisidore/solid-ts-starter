@@ -10,6 +10,20 @@ type CreateStorageOptions<T> = {
 };
 
 /**
+ * Default serializer.
+ */
+function defaultSerializer<T>(value: T): string {
+  return JSON.stringify(value);
+}
+
+/**
+ * Default deserializer.
+ */
+function defaultDeserializer(text: string) {
+  return JSON.parse(text);
+}
+
+/**
  * Read initial value from a web storage.
  *
  * @param storage Object implementing the Web Storage API (e.g. `localStorage`).
@@ -17,7 +31,7 @@ type CreateStorageOptions<T> = {
  * @param defaultValue Default value.
  * @param deserialize Deserializer function.
  *
- * @returns Initial value.
+ * @returns Storage initial value.
  */
 function getInitialValue<T>(
   storage: Storage,
@@ -34,9 +48,8 @@ function getInitialValue<T>(
 }
 
 /**
- * Create a reactive value that synchronizes with a web storage.
+ * Create a signal that synchronizes with a web storage.
  *
- * @param createValue Function returning an accessor and a setter for a value.
  * @param storage Object implementing the Web Storage API (e.g. `localStorage`).
  * @param key Key in the web storage.
  * @param defaultValue Default value.
@@ -44,23 +57,46 @@ function getInitialValue<T>(
  *
  * @returns An accessor, a setter, and a remover for the value.
  */
-function createStorageValue<
-  T,
-  F extends (initialValue: T) => [() => unknown, unknown],
->(
-  createValue: F,
+function createStorageSignal<T>(
   storage: Storage,
   key: string,
   defaultValue?: T,
   options?: CreateStorageOptions<T>,
-): [ReturnType<F>[0], ReturnType<F>[1], () => void] {
-  const serialize = options?.serialize ?? JSON.stringify;
-  const deserialize = options?.deserialize ?? JSON.parse;
+) {
+  const serialize = options?.serialize ?? defaultSerializer;
+  const deserialize = options?.deserialize ?? defaultDeserializer;
 
   const initialValue = getInitialValue(storage, key, defaultValue, deserialize);
-  const [value, setValue] = createValue(initialValue);
+  const [value, setValue] = createSignal(initialValue);
 
   createEffect(() => storage.setItem(key, serialize(value())));
+
+  return [value, setValue, () => storage.removeItem(key)];
+}
+
+/**
+ * Create a store that synchronizes with a web storage.
+ *
+ * @param storage Object implementing the Web Storage API (e.g. `localStorage`).
+ * @param key Key in the web storage.
+ * @param defaultValue Default value.
+ * @param options Overrides serializer and deserializer functions.
+ *
+ * @returns An accessor, a setter, and a remover for the value.
+ */
+function createStorageStore<T>(
+  storage: Storage,
+  key: string,
+  defaultValue?: T,
+  options?: CreateStorageOptions<T>,
+) {
+  const serialize = options?.serialize ?? defaultSerializer;
+  const deserialize = options?.deserialize ?? defaultDeserializer;
+
+  const initialValue = getInitialValue(storage, key, defaultValue, deserialize);
+  const [value, setValue] = createStore(initialValue);
+
+  createEffect(() => storage.setItem(key, serialize(value)));
 
   return [value, setValue, () => storage.removeItem(key)];
 }
@@ -79,13 +115,7 @@ export function createLocalStorageSignal<T>(
   defaultValue?: T,
   options?: CreateStorageOptions<T>,
 ) {
-  return createStorageValue(
-    createSignal<T>,
-    localStorage,
-    key,
-    defaultValue,
-    options,
-  );
+  return createStorageSignal(localStorage, key, defaultValue, options);
 }
 
 /**
@@ -102,13 +132,7 @@ export function createSessionStorageSignal<T>(
   defaultValue?: T,
   options?: CreateStorageOptions<T>,
 ) {
-  return createStorageValue(
-    createSignal<T>,
-    sessionStorage,
-    key,
-    defaultValue,
-    options,
-  );
+  return createStorageSignal(sessionStorage, key, defaultValue, options);
 }
 
 /**
@@ -125,16 +149,7 @@ export function createLocalStorageStore<T extends object>(
   defaultValue?: T,
   options?: CreateStorageOptions<T>,
 ) {
-  return createStorageValue(
-    (initialValue) => {
-      const [value, setValue] = createStore<T>(initialValue);
-      return [() => value, setValue];
-    },
-    localStorage,
-    key,
-    defaultValue,
-    options,
-  );
+  return createStorageStore(localStorage, key, defaultValue, options);
 }
 
 /**
@@ -151,14 +166,5 @@ export function createSessionStorageStore<T extends object>(
   defaultValue?: T,
   options?: CreateStorageOptions<T>,
 ) {
-  return createStorageValue(
-    (initialValue) => {
-      const [value, setValue] = createStore<T>(initialValue);
-      return [() => value, setValue];
-    },
-    sessionStorage,
-    key,
-    defaultValue,
-    options,
-  );
+  return createStorageStore(sessionStorage, key, defaultValue, options);
 }

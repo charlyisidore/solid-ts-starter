@@ -8,7 +8,7 @@ import defaultStyles from './Hello.module.scss';
  * Just says hello.
  */
 const Hello = () => {
-  const [colorScheme] = useColorScheme();
+  const colorScheme = useColorScheme();
   const styles = useStyles('Hello', defaultStyles);
   const translate = useTranslate();
   return (

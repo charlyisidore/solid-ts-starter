@@ -6,7 +6,7 @@ Features included:
 
 - 💬 Translations
 - 🎨 Themes
-- 🌗 Color schemes
+- 🌗 Light/dark mode
 
 This template is configured with:
 
@@ -39,7 +39,7 @@ src/
 │  ├─ {theme}/index.ts  Collection of styles for {theme}
 │  └─ index.ts          List of themes and their names
 ├─ App.tsx              Root app component
-├─ config.tsx           Configuration provider
+├─ AppState.tsx         App state and configuration
 ├─ index.scss           Root styles
 ├─ index.tsx            Root script
 └─ routes.ts            Routing configuration

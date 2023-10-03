@@ -1,6 +1,11 @@
-import { For } from 'solid-js';
 import { fireEvent, render } from '@solidjs/testing-library';
-import { LocaleProvider, useLanguage, useTranslate } from './locale';
+import { For, createSignal } from 'solid-js';
+import {
+  type Dictionary,
+  LocaleProvider,
+  createDictionary,
+  useTranslate,
+} from './locale';
 
 describe('locale provider', () => {
   it('throws LocaleContext not found', async () => {
@@ -13,11 +18,9 @@ describe('locale provider', () => {
   });
 
   it('shows a string translation', async () => {
-    const locales: Record<string, object> = {
-      eo: {
-        hello: 'saluton',
-      },
-    };
+    const dictionary = createDictionary({
+      hello: 'saluton',
+    });
 
     const Hello = () => {
       const translate = useTranslate();
@@ -25,11 +28,7 @@ describe('locale provider', () => {
     };
 
     const { getByTestId } = render(() => (
-      <LocaleProvider
-        initialLanguage="eo"
-        initialDictionary={locales.eo}
-        fetchDictionary={(language) => locales[language]}
-      >
+      <LocaleProvider dictionary={dictionary}>
         <Hello />
       </LocaleProvider>
     ));
@@ -39,11 +38,9 @@ describe('locale provider', () => {
   });
 
   it('shows a function translation', async () => {
-    const locales: Record<string, object> = {
-      eo: {
-        hello: ({ name }: { name: string }) => `saluton ${name}`,
-      },
-    };
+    const dictionary = createDictionary({
+      hello: ({ name }: { name: string }) => `saluton ${name}`,
+    });
 
     const Hello = () => {
       const translate = useTranslate();
@@ -53,11 +50,7 @@ describe('locale provider', () => {
     };
 
     const { getByTestId } = render(() => (
-      <LocaleProvider
-        initialLanguage="eo"
-        initialDictionary={locales.eo}
-        fetchDictionary={(language) => locales[language]}
-      >
+      <LocaleProvider dictionary={dictionary}>
         <Hello />
       </LocaleProvider>
     ));
@@ -67,13 +60,11 @@ describe('locale provider', () => {
   });
 
   it('shows a nested translation', async () => {
-    const locales: Record<string, object> = {
-      eo: {
-        button: {
-          hello: 'saluton',
-        },
+    const dictionary = createDictionary({
+      button: {
+        hello: 'saluton',
       },
-    };
+    });
 
     const Hello = () => {
       const translate = useTranslate();
@@ -81,11 +72,7 @@ describe('locale provider', () => {
     };
 
     const { getByTestId } = render(() => (
-      <LocaleProvider
-        initialLanguage="eo"
-        initialDictionary={locales.eo}
-        fetchDictionary={(language) => locales[language]}
-      >
+      <LocaleProvider dictionary={dictionary}>
         <Hello />
       </LocaleProvider>
     ));
@@ -94,10 +81,8 @@ describe('locale provider', () => {
     expect(hello).toHaveTextContent(/^saluton$/u);
   });
 
-  it('shows the translation key as fallback', async () => {
-    const locales: Record<string, object> = {
-      eo: {},
-    };
+  it('shows the translation key when key is not found', async () => {
+    const dictionary = createDictionary({});
 
     const Hello = () => {
       const translate = useTranslate();
@@ -105,11 +90,7 @@ describe('locale provider', () => {
     };
 
     const { getByTestId } = render(() => (
-      <LocaleProvider
-        initialLanguage="eo"
-        initialDictionary={locales.eo}
-        fetchDictionary={(language) => locales[language]}
-      >
+      <LocaleProvider dictionary={dictionary}>
         <Hello />
       </LocaleProvider>
     ));
@@ -118,42 +99,30 @@ describe('locale provider', () => {
     expect(hello).toHaveTextContent(/^hello$/u);
   });
 
-  it('fetches initial dictionary', async () => {
-    const locales: Record<string, object> = {
-      eo: {
-        hello: 'saluton',
-      },
-    };
-
+  it('shows the translation key when dictionary is not found', async () => {
     const Hello = () => {
       const translate = useTranslate();
       return <div data-testid="hello">{translate('hello')}</div>;
     };
 
     const { getByTestId } = render(() => (
-      <LocaleProvider
-        initialLanguage="eo"
-        fetchDictionary={(language) => locales[language]}
-      >
+      <LocaleProvider>
         <Hello />
       </LocaleProvider>
     ));
 
     const hello = getByTestId('hello');
-    // Calling async functions
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(hello).toHaveTextContent(/^saluton$/u);
+    expect(hello).toHaveTextContent(/^hello$/u);
   });
 
   it('changes the language', async () => {
-    const locales: Record<string, object> = {
-      eo: {
+    const locales: Record<string, Dictionary> = {
+      eo: createDictionary({
         hello: 'saluton',
-      },
-      vo: {
+      }),
+      vo: createDictionary({
         hello: 'glidis',
-      },
+      }),
     };
 
     const Hello = () => {
@@ -161,41 +130,30 @@ describe('locale provider', () => {
       return <div data-testid="hello">{translate('hello')}</div>;
     };
 
-    const LanguageSelect = () => {
-      const [language, setLanguage] = useLanguage();
+    const { getByTestId } = render(() => {
+      const [language, setLanguage] = createSignal('eo');
       const handleChange = (event: Event) =>
         setLanguage((event.target as HTMLSelectElement).value);
       return (
-        <select data-testid="select" onChange={handleChange}>
-          <For each={Object.keys(locales)}>
-            {(code) => (
-              <option value={code} selected={code === language()}>
-                {code}
-              </option>
-            )}
-          </For>
-        </select>
+        <LocaleProvider dictionary={locales[language()]}>
+          <Hello />
+          <select data-testid="select" onChange={handleChange}>
+            <For each={Object.keys(locales)}>
+              {(value) => (
+                <option value={value} selected={value === language()}>
+                  {value}
+                </option>
+              )}
+            </For>
+          </select>
+        </LocaleProvider>
       );
-    };
-
-    const { getByTestId } = render(() => (
-      <LocaleProvider
-        initialLanguage="eo"
-        initialDictionary={locales.eo}
-        fetchDictionary={(language) => locales[language]}
-      >
-        <Hello />
-        <LanguageSelect />
-      </LocaleProvider>
-    ));
+    });
 
     const hello = getByTestId('hello');
     const select = getByTestId('select');
     expect(hello).toHaveTextContent(/^saluton$/u);
     fireEvent.change(select, { target: { value: 'vo' } });
-    // Calling async functions
-    await Promise.resolve();
-    await Promise.resolve();
     expect(hello).toHaveTextContent(/^glidis$/u);
   });
 });

@@ -1,33 +1,28 @@
 import {
   type ParentComponent,
-  type Signal,
   createContext,
   createSignal,
+  onCleanup,
+  onMount,
   useContext,
 } from 'solid-js';
 
 /**
  * Color scheme context.
  */
-const ColorSchemeContext = createContext<Signal<string | undefined>>();
+const ColorSchemeContext = createContext<() => string | undefined>();
 
 /**
- * Hook for managing the color scheme value.
+ * Hook for accessing the color scheme value.
  *
- * @returns An accessor and a setter for the color scheme value.
+ * @returns An accessor for the color scheme value.
  *
  * @example
  *   import { useColorScheme } from './providers/color-scheme';
  *
- *   const Button = () => {
- *     const [colorScheme, setColorScheme] = useColorScheme();
- *     const handleClick = () =>
- *       setColorScheme(colorScheme() === 'light' ? 'dark' : 'light');
- *     return (
- *       <button class={colorScheme()} onClick={handleClick}>
- *         {colorScheme()}
- *       </button>
- *     );
+ *   const Hello = () => {
+ *     const colorScheme = useColorScheme();
+ *     return <div class={colorScheme()}>Hello</div>;
  *   };
  */
 export function useColorScheme() {
@@ -41,7 +36,9 @@ export function useColorScheme() {
 /**
  * Provide a color scheme value for descendant components.
  *
- * @prop {string?} initialColorScheme Initial color scheme value.
+ * @prop {string | undefined} colorScheme Overrides browser's color scheme.
+ * @prop {string | undefined} defaultColorScheme Default color scheme when
+ *       undefined.
  *
  * @example
  *   import {
@@ -50,22 +47,68 @@ export function useColorScheme() {
  *   } from './providers/color-scheme';
  *
  *   const Hello = () => {
- *     const [colorScheme] = useColorScheme();
+ *     const colorScheme = useColorScheme();
  *     return <div class={colorScheme()}>Hello</div>;
  *   };
  *
  *   const App = () => (
- *     <ColorSchemeProvider colorScheme="dark">
+ *     <ColorSchemeProvider defaultColorScheme="light">
  *       <Hello />
  *     </ColorSchemeProvider>
  *   );
  */
 export const ColorSchemeProvider: ParentComponent<{
-  initialColorScheme?: string;
+  colorScheme?: string;
+  defaultColorScheme?: string;
 }> = (props) => {
-  const [colorScheme, setColorScheme] = createSignal(props.initialColorScheme);
+  const colorSchemeList = ['light', 'dark'];
+
+  const mediaQueryLists = Object.fromEntries(
+    colorSchemeList.map((colorScheme) => [
+      colorScheme,
+      window.matchMedia(`(prefers-color-scheme: ${colorScheme})`),
+    ]),
+  );
+
+  const [initialColorScheme] =
+    Object.entries(mediaQueryLists) //
+      .find(([, mediaQueryList]) => mediaQueryList.matches) ?? [];
+
+  const [colorScheme, setColorScheme] = createSignal(initialColorScheme);
+
+  const handleChange = Object.fromEntries(
+    colorSchemeList.map((colorScheme) => [
+      colorScheme,
+      (event: MediaQueryListEvent) =>
+        event.matches && setColorScheme(colorScheme),
+    ]),
+  );
+
+  onMount(() =>
+    colorSchemeList.forEach(
+      (colorScheme) =>
+        mediaQueryLists[colorScheme].addEventListener?.(
+          'change',
+          handleChange[colorScheme],
+        ),
+    ),
+  );
+
+  onCleanup(() =>
+    colorSchemeList.forEach(
+      (colorScheme) =>
+        mediaQueryLists[colorScheme].removeEventListener?.(
+          'change',
+          handleChange[colorScheme],
+        ),
+    ),
+  );
+
+  const value = () =>
+    props.colorScheme ?? colorScheme() ?? props.defaultColorScheme;
+
   return (
-    <ColorSchemeContext.Provider value={[colorScheme, setColorScheme]}>
+    <ColorSchemeContext.Provider value={value}>
       {props.children}
     </ColorSchemeContext.Provider>
   );
