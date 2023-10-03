@@ -1,18 +1,16 @@
 import { type Component, For } from 'solid-js';
 
-type Value = string | number | string[] | undefined;
-
 /**
  * Wrapper for `<select>` element.
  *
  * @prop {Record<string, string>} options Object mapping values to names.
- * @prop {Value} value Selected value.
+ * @prop {string} value Selected value.
  * @prop {((value: string) => void) | undefined} onChange Function called on
  *       option change.
  */
 const Select: Component<{
   options: Record<string, string>;
-  value?: Value;
+  value?: string;
   onChange?: (value: string) => void;
 }> = (props) => {
   const handleChange = (event: Event) =>
