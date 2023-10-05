@@ -25,7 +25,7 @@ export type Theme = Record<string, Styles>;
 export type Classes =
   | string
   | (string | Record<string, boolean | undefined> | undefined)[]
-  | Record<string, boolean>
+  | Record<string, boolean | undefined>
   | undefined;
 
 /**
