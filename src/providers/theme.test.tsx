@@ -50,7 +50,7 @@ describe('theme provider', () => {
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles(['a', undefined, 'b'])}>
+        <div data-testid="hello" class={styles(['a', undefined, { b: true }])}>
           Hello
         </div>
       );

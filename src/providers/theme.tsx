@@ -24,7 +24,7 @@ export type Theme = Record<string, Styles>;
  */
 export type Classes =
   | string
-  | (string | undefined)[]
+  | (string | Record<string, boolean> | undefined)[]
   | Record<string, boolean>
   | undefined;
 
@@ -58,8 +58,8 @@ function mergeStyles(styles: Styles[]): Styles {
  *
  * If the argument is:
  * - a string: the string is split based on whitespaces.
- * - an array of strings: strings are split based on whitespaces, and merged
- *   into one array without duplicates.
+ * - an array of strings and/or objects: objects are normalized, strings are
+ *   split based on whitespaces, and the result is merged into one array.
  * - an object of booleans: keys having a true value are merged into one array.
  * - undefined: an empty array is returned.
  *
@@ -76,6 +76,8 @@ function mergeStyles(styles: Styles[]): Styles {
  *   // => ['hello']
  *   normalizeClasses(undefined);
  *   // => []
+ *   normalizeClasses(['hello', { world: true }]);
+ *   // => ['hello', 'world']
  */
 function normalizeClasses(classes: Classes): string[] {
   if (!classes) {
@@ -86,8 +88,12 @@ function normalizeClasses(classes: Classes): string[] {
     return [
       ...new Set(
         classes
-          .filter((value) => value)
-          .map((value) => (value as string).split(/\s+/u))
+          .map((value) => {
+            if (typeof value === 'object') {
+              return normalizeClasses(value);
+            }
+            return value?.split(/\s+/u) ?? [];
+          })
           .flat()
           .filter((value) => value),
       ),
@@ -102,7 +108,7 @@ function normalizeClasses(classes: Classes): string[] {
     );
   }
 
-  return normalizeClasses([classes]);
+  return normalizeClasses(classes.split(/\s+/u));
 }
 
 /**
