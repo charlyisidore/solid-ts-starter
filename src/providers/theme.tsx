@@ -88,12 +88,11 @@ function normalizeClasses(classes: Classes): string[] {
     return [
       ...new Set(
         classes
-          .map((value) => {
-            if (typeof value === 'object') {
-              return normalizeClasses(value);
-            }
-            return value?.split(/\s+/u) ?? [];
-          })
+          .map((value) =>
+            typeof value === 'object'
+              ? normalizeClasses(value)
+              : value?.split(/\s+/u) ?? [],
+          )
           .flat()
           .filter((value) => value),
       ),
