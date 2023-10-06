@@ -24,7 +24,7 @@ export type Theme = Record<string, Styles>;
  */
 export type Classes =
   | string
-  | (string | Record<string, boolean | undefined> | undefined)[]
+  | Classes[]
   | Record<string, boolean | undefined>
   | undefined;
 
@@ -58,9 +58,8 @@ function mergeStyles(styles: Styles[]): Styles {
  *
  * If the argument is:
  * - a string: the string is split based on whitespaces.
- * - an array of strings and/or objects: objects are normalized, strings are
- *   split based on whitespaces, and the result is merged into one array.
- * - an object of booleans: keys having a true value are merged into one array.
+ * - an array: its items are normalized and the result is merged into one array.
+ * - an object: keys having a truthy value are merged into one array.
  * - undefined: an empty array is returned.
  *
  * @param classes Classes as string, array, object or undefined value.
@@ -70,44 +69,39 @@ function mergeStyles(styles: Styles[]): Styles {
  * @example
  *   normalizeClasses('hello world');
  *   // => ['hello', 'world']
- *   normalizeClasses(['hello', undefined, 'world']);
- *   // => ['hello', 'world']
+ *   normalizeClasses(['hello', ['world'], { bye: true }, undefined]);
+ *   // => ['hello', 'world', 'bye']
  *   normalizeClasses({ hello: true, world: false });
  *   // => ['hello']
  *   normalizeClasses(undefined);
  *   // => []
- *   normalizeClasses(['hello', { world: true }]);
- *   // => ['hello', 'world']
  */
 function normalizeClasses(classes: Classes): string[] {
   if (!classes) {
     return [];
   }
 
+  if (typeof classes === 'string') {
+    return [...new Set(classes.split(/\s+/u).filter((value) => value))];
+  }
+
   if (Array.isArray(classes)) {
     return [
       ...new Set(
         classes
-          .map((value) =>
-            typeof value === 'object'
-              ? normalizeClasses(value)
-              : value?.split(/\s+/u) ?? [],
-          )
+          .map(normalizeClasses)
           .flat()
           .filter((value) => value),
       ),
     ];
   }
 
-  if (typeof classes === 'object') {
-    return normalizeClasses(
-      Object.entries(classes) //
-        .filter(([, value]) => value)
-        .map(([key]) => key),
-    );
-  }
-
-  return normalizeClasses(classes.split(/\s+/u));
+  // typeof classes === 'object'
+  return normalizeClasses(
+    Object.entries(classes) //
+      .filter(([, value]) => value)
+      .map(([key]) => key),
+  );
 }
 
 /**

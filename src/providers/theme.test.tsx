@@ -23,7 +23,7 @@ describe('theme provider', () => {
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles('a b')}>
+        <div data-testid="hello" class={styles(' a b ')}>
           Hello
         </div>
       );
@@ -44,13 +44,17 @@ describe('theme provider', () => {
       Hello: {
         a: 'theme_a',
         b: 'theme_b',
+        c: 'theme_c',
       },
     };
 
     const Hello = () => {
       const styles = useStyles('Hello');
       return (
-        <div data-testid="hello" class={styles(['a', undefined, { b: true }])}>
+        <div
+          data-testid="hello"
+          class={styles(['a', ['b'], { c: true }, undefined])}
+        >
           Hello
         </div>
       );
@@ -63,7 +67,7 @@ describe('theme provider', () => {
     ));
 
     const hello = getByTestId('hello');
-    expect(hello).toHaveClass('theme_a theme_b', { exact: true });
+    expect(hello).toHaveClass('theme_a theme_b theme_c', { exact: true });
   });
 
   it('applies styles from object', async () => {
