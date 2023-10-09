@@ -1,5 +1,5 @@
-import { vi } from 'vitest';
-import { fireEvent, render } from '@solidjs/testing-library';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render } from '@solidjs/testing-library';
 import { createSignal } from 'solid-js';
 import { ColorSchemeProvider, useColorScheme } from './color-scheme';
 
@@ -25,6 +25,9 @@ function defineMatchMedia(colorScheme?: string) {
 }
 
 describe('color scheme provider', () => {
+  // eslint-disable-next-line vitest/no-hooks
+  afterEach(cleanup);
+
   it('throws ColorSchemeContext not found', async () => {
     expect(() =>
       render(() => {

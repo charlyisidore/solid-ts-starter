@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@solidjs/testing-library';
 import Select from './Select';
 

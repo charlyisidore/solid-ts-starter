@@ -1,4 +1,5 @@
-import { fireEvent, render } from '@solidjs/testing-library';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render } from '@solidjs/testing-library';
 import { For, createSignal } from 'solid-js';
 import {
   type Dictionary,
@@ -8,6 +9,9 @@ import {
 } from './locale';
 
 describe('locale provider', () => {
+  // eslint-disable-next-line vitest/no-hooks
+  afterEach(cleanup);
+
   it('throws LocaleContext not found', async () => {
     expect(() =>
       render(() => {

@@ -1,8 +1,12 @@
-import { fireEvent, render } from '@solidjs/testing-library';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render } from '@solidjs/testing-library';
 import { For, createSignal } from 'solid-js';
 import { type Theme, ThemeProvider, useStyles } from './theme';
 
 describe('theme provider', () => {
+  // eslint-disable-next-line vitest/no-hooks
+  afterEach(cleanup);
+
   it('throws ThemeContext not found', async () => {
     expect(() =>
       render(() => {

@@ -156,13 +156,7 @@ export default [
   },
   {
     files: ['**/*.test.{[jt]s,[jt]sx}'],
-    languageOptions: {
-      ...languageOptions,
-      globals: {
-        ...globals.browser,
-        ...vitest.environments.env.globals,
-      },
-    },
+    languageOptions,
     plugins: {
       ...plugins,
       vitest,
