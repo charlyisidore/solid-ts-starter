@@ -1,8 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render } from '@solidjs/testing-library';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render } from '@solidjs/testing-library';
 import Select from './Select';
 
 describe('<Select>', () => {
+  // eslint-disable-next-line vitest/no-hooks
+  afterEach(cleanup);
+
   it('changes the value', async () => {
     const options = {
       light: 'Light',
