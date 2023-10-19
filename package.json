@@ -19,13 +19,13 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.8.3",
-    "solid-js": "^1.8.1"
+    "solid-js": "^1.8.3"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.4",
-    "@testing-library/jest-dom": "^6.1.3",
-    "@typescript-eslint/eslint-plugin": "^6.7.5",
-    "@typescript-eslint/parser": "^6.7.5",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@typescript-eslint/eslint-plugin": "^6.8.0",
+    "@typescript-eslint/parser": "^6.8.0",
     "@vitest/coverage-v8": "^0.34.6",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
@@ -34,11 +34,11 @@
     "globals": "^13.23.0",
     "jsdom": "^22.1.0",
     "prettier": "^3.0.3",
-    "sass": "^1.69.2",
+    "sass": "^1.69.4",
     "solid-devtools": "^0.27.7",
     "typescript": "^5.2.2",
-    "vite": "^4.4.11",
-    "vite-plugin-solid": "^2.7.1",
+    "vite": "^4.5.0",
+    "vite-plugin-solid": "^2.7.2",
     "vitest": "^0.34.6"
   }
 }
