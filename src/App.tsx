@@ -1,25 +1,32 @@
-import { A, useRoutes } from '@solidjs/router';
-import routes from './routes';
+import { ParentComponent } from 'solid-js';
+import { A } from '@solidjs/router';
+import { AppStateProvider } from './AppState';
 
 import styles from './App.module.scss';
 
 /**
  * App root component.
  */
-const App = () => {
-  const Routes = useRoutes(routes);
+const App: ParentComponent = (props) => {
   return (
-    <div class={styles.app}>
-      <nav class={styles.nav}>
-        <A href="/" class={styles.link} activeClass={styles.active} end={true}>
-          Home
-        </A>
-        <A href="/settings" class={styles.link} activeClass={styles.active}>
-          Settings
-        </A>
-      </nav>
-      <Routes />
-    </div>
+    <AppStateProvider>
+      <div class={styles.app}>
+        <nav class={styles.nav}>
+          <A
+            href="/"
+            class={styles.link}
+            activeClass={styles.active}
+            end={true}
+          >
+            Home
+          </A>
+          <A href="/settings" class={styles.link} activeClass={styles.active}>
+            Settings
+          </A>
+        </nav>
+        {props.children}
+      </div>
+    </AppStateProvider>
   );
 };
 
